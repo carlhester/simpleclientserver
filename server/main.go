@@ -20,9 +20,17 @@ type serverConsole struct {
 	*bufio.Writer
 }
 
+type playerList struct {
+	players []player
+}
+
+func (p *playerList) add(player player) {
+	p.players = append(p.players, player)
+}
+
 // game handles the high level "global" state of the game
 type game struct {
-	players []player
+	playerList
 }
 
 // a player is a client with some labels
@@ -30,6 +38,7 @@ type player struct {
 	id   int
 	conn clientFrontEnd
 	name string
+	msgs chan string
 }
 
 func main() {
@@ -41,17 +50,17 @@ func main() {
 
 	// players keeps a list of active players
 	// the initial player is the serverConsole
-	players := []player{
-		{
-			id:   0,
-			conn: serverConsole,
-			name: "server",
-		},
+	console := player{
+		id:   0,
+		conn: serverConsole,
+		name: "server",
 	}
+	playerList := &playerList{}
+	playerList.add(console)
 
 	// new game
 	g := game{
-		players: players,
+		*playerList,
 	}
 
 	// create players by listening for network connects
@@ -60,23 +69,29 @@ func main() {
 	// there are 3 players: server, p1 and p2
 	for id := 1; id < 3; id++ {
 		conn := ListenForConnection(addr)
-		player := &player{id: id, conn: *conn}
-		g.players = append(g.players, *player)
+		msgs := make(chan string)
+		player := &player{
+			id:   id,
+			conn: *conn,
+			msgs: msgs,
+		}
 		getPlayerName(player)
+		g.playerList.add(*player)
+
 		sendMsgTo(fmt.Sprintf("You are player %d", id), *player)
 		go listenForMessages(*player)
+		go echoMessages(*player, &g.playerList)
 	}
 	log.Println(g)
 
 	// test writing to each
-	sendMsgTo("Server: BROADCAST", g.players...)
-	for _, v := range players {
+	sendMsgTo("Server: BROADCAST", g.playerList.players...)
+	for _, v := range g.playerList.players {
 		scanner := bufio.NewScanner(v.conn)
 		if scanner.Scan() {
 			log.Println(scanner.Text())
 		}
 	}
-
 }
 
 func getPlayerName(p *player) {
@@ -108,6 +123,18 @@ func listenForMessages(p player) {
 		for scanner.Scan() {
 			prefix := fmt.Sprintf("[%d] %s: ", p.id, p.name)
 			log.Println(prefix + scanner.Text() + "\n")
+			p.msgs <- prefix + scanner.Text() + "\n"
+		}
+	}
+}
+
+func echoMessages(player player, players *playerList) {
+	for {
+		txt, ok := <-player.msgs
+		if ok {
+			fmt.Println("ok!")
+			sendMsgTo(txt, players.players...)
+			log.Println(players)
 		}
 	}
 }
