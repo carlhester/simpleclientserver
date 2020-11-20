@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strings"
 )
 
 // clientFrontEnd is how the server interacts with the external clients
@@ -63,6 +62,7 @@ func main() {
 		conn := ListenForConnection(addr)
 		player := &player{id: id, conn: *conn}
 		g.players = append(g.players, *player)
+		getPlayerName(player)
 		sendMsgTo(fmt.Sprintf("You are player %d", id), *player)
 		go listenForMessages(*player)
 	}
@@ -76,12 +76,22 @@ func main() {
 			log.Println(scanner.Text())
 		}
 	}
+
+}
+
+func getPlayerName(p *player) {
+	sendMsgTo("Hello! What is your name? ", *p)
+	reader := bufio.NewReader(p.conn)
+	name, _ := reader.ReadString('\n')
+	p.name = name[:len(name)-1]
+	log.Println(name)
 }
 
 func sendMsgTo(msg string, players ...player) {
 	// Remove newline if exists and add our own
-	msg = strings.TrimSuffix(msg, "\n")
-	msg = msg + "\n"
+	if msg[len(msg)-1] != '\n' {
+		msg = msg + string('\n')
+	}
 	for _, v := range players {
 		writer := bufio.NewWriter(v.conn)
 		_, err := writer.WriteString(msg)
