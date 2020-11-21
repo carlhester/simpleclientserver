@@ -84,8 +84,8 @@ func main() {
 	}
 	log.Println(g)
 
-	// test writing to each
-	sendMsgTo("Server: BROADCAST", g.playerList.players...)
+	// writing a message to each
+	sendMsgTo("[0] Server: BROADCAST", g.playerList.players...)
 	for _, v := range g.playerList.players {
 		scanner := bufio.NewScanner(v.conn)
 		if scanner.Scan() {
@@ -132,9 +132,11 @@ func echoMessages(player player, players *playerList) {
 	for {
 		txt, ok := <-player.msgs
 		if ok {
-			fmt.Println("ok!")
-			sendMsgTo(txt, players.players...)
-			log.Println(players)
+			for _, p := range players.players {
+				if p != player {
+					sendMsgTo(txt, p)
+				}
+			}
 		}
 	}
 }

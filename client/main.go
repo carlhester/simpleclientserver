@@ -25,12 +25,12 @@ func connect(host string, port int) {
 	go receiveRemoteServerMsgs(conn)
 	go localClientInput(conn)
 	for {
-
 	}
 }
 
 // Reads data from local client Stdin and sends across conn
 func localClientInput(conn net.Conn) {
+	fmt.Print("> ")
 	scanner := bufio.NewScanner(os.Stdin)
 	writer := bufio.NewWriter(conn)
 	for scanner.Scan() {
@@ -47,7 +47,9 @@ func receiveRemoteServerMsgs(conn net.Conn) {
 	for {
 		scanner := bufio.NewScanner(conn)
 		for scanner.Scan() {
+			fmt.Print("\r")
 			fmt.Print(scanner.Text() + "\n")
+			fmt.Print("> ")
 		}
 	}
 }
