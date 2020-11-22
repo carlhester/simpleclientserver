@@ -28,6 +28,17 @@ func (p *playerList) add(player player) {
 	p.players = append(p.players, player)
 }
 
+func (p *playerList) remove(toRemove player) {
+	var newList []player
+	for _, p := range p.players {
+		if p.id == toRemove.id {
+			continue
+			newList = append(newList, p)
+		}
+	}
+	p.players = newList
+}
+
 // game handles the high level "global" state of the game
 type game struct {
 	playerList
@@ -35,13 +46,16 @@ type game struct {
 
 // a player is a client with some labels
 type player struct {
-	id   int
-	conn clientFrontEnd
-	name string
-	msgs chan string
+	id    int
+	conn  clientFrontEnd
+	name  string
+	msgs  chan string
+	pList *playerList
 }
 
 func main() {
+	playerList := &playerList{}
+
 	// the serverConsole uses standard in/out
 	serverConsole := serverConsole{
 		bufio.NewReader(os.Stdin),
@@ -51,11 +65,11 @@ func main() {
 	// players keeps a list of active players
 	// the initial player is the serverConsole
 	console := player{
-		id:   0,
-		conn: serverConsole,
-		name: "server",
+		id:    0,
+		conn:  serverConsole,
+		name:  "server",
+		pList: playerList,
 	}
-	playerList := &playerList{}
 	playerList.add(console)
 
 	// new game
@@ -71,9 +85,10 @@ func main() {
 		conn := ListenForConnection(addr)
 		msgs := make(chan string)
 		player := &player{
-			id:   id,
-			conn: *conn,
-			msgs: msgs,
+			id:    id,
+			conn:  *conn,
+			msgs:  msgs,
+			pList: playerList,
 		}
 		getPlayerName(player)
 		g.playerList.add(*player)
@@ -82,7 +97,6 @@ func main() {
 		go listenForMessages(*player)
 		go echoMessages(*player, &g.playerList)
 	}
-	log.Println(g)
 
 	// writing a message to each
 	sendMsgTo("[0] Server: BROADCAST", g.playerList.players...)
@@ -103,7 +117,6 @@ func getPlayerName(p *player) {
 }
 
 func sendMsgTo(msg string, players ...player) {
-	// Remove newline if exists and add our own
 	if msg[len(msg)-1] != '\n' {
 		msg = msg + string('\n')
 	}

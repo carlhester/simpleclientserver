@@ -34,6 +34,7 @@ func localClientInput(conn net.Conn) {
 	scanner := bufio.NewScanner(os.Stdin)
 	writer := bufio.NewWriter(conn)
 	for scanner.Scan() {
+		fmt.Print("> ")
 		_, err := writer.WriteString(scanner.Text() + "\n")
 		if err != nil {
 			log.Println(err)
