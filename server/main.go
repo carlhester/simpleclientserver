@@ -54,6 +54,11 @@ type player struct {
 }
 
 func main() {
+	// initialize id incrementer
+	id := make(chan int)
+	go incrementer(id)
+
+	// init empty playerList
 	playerList := &playerList{}
 
 	// the serverConsole uses standard in/out
@@ -64,8 +69,9 @@ func main() {
 
 	// players keeps a list of active players
 	// the initial player is the serverConsole
+	consoleId := <-id
 	console := player{
-		id:    0,
+		id:    consoleId,
 		conn:  serverConsole,
 		name:  "server",
 		pList: playerList,
@@ -73,39 +79,45 @@ func main() {
 	playerList.add(console)
 
 	// new game
-	g := game{
+	g := &game{
 		*playerList,
 	}
 
 	// create players by listening for network connects
 	addr := &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123}
 	log.Printf("listening on %s", addr)
-	// there are 3 players: server, p1 and p2
-	for id := 1; id < 3; id++ {
-		conn := ListenForConnection(addr)
-		msgs := make(chan string)
-		player := &player{
-			id:    id,
-			conn:  *conn,
-			msgs:  msgs,
-			pList: playerList,
-		}
-		getPlayerName(player)
-		g.playerList.add(*player)
-
-		sendMsgTo(fmt.Sprintf("You are player %d", id), *player)
-		go listenForMessages(*player)
-		go echoMessages(*player, &g.playerList)
+	listener, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		log.Panic(err)
 	}
+	defer listener.Close()
 
-	// writing a message to each
-	sendMsgTo("[0] Server: BROADCAST", g.playerList.players...)
-	for _, v := range g.playerList.players {
-		scanner := bufio.NewScanner(v.conn)
-		if scanner.Scan() {
-			log.Println(scanner.Text())
+	// accept network connections and assign players
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Panic(err)
 		}
+		id := <-id
+		go setupNewPlayer(conn, g, id, playerList)
 	}
+}
+
+func setupNewPlayer(conn net.Conn, game *game, id int, playerList *playerList) {
+	var newPlayer *player
+	var msgs = make(chan string)
+	log.Printf("Client connected: %s...\n", conn.RemoteAddr())
+	newPlayer = &player{
+		id:    id,
+		conn:  conn,
+		msgs:  msgs,
+		pList: playerList,
+	}
+	getPlayerName(newPlayer)
+	game.playerList.add(*newPlayer)
+	sendMsgTo(fmt.Sprintf("You are player %d", id), *newPlayer)
+	go listenForMessages(*newPlayer)
+	go echoMessages(*newPlayer, &game.playerList)
 }
 
 func getPlayerName(p *player) {
@@ -124,7 +136,7 @@ func sendMsgTo(msg string, players ...player) {
 		writer := bufio.NewWriter(v.conn)
 		_, err := writer.WriteString(msg)
 		if err != nil {
-			log.Println(err)
+			log.Panic(err)
 		}
 		writer.Flush()
 	}
@@ -154,17 +166,18 @@ func echoMessages(player player, players *playerList) {
 	}
 }
 
-func ListenForConnection(addr *net.TCPAddr) *net.Conn {
+/*func ListenForConnection(addr *net.TCPAddr) *net.Conn {
 	listener, err := net.ListenTCP("tcp", addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	defer listener.Close()
 
 	conn, err := listener.Accept()
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 	log.Printf("Client connected: %s...\n", conn.RemoteAddr())
 	return &conn
 }
+*/
