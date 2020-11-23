@@ -1,17 +1,25 @@
 package main
 
 import (
-	"bufio"
 	"os"
 )
 
 // the serverConsole is a special kind of client
 type serverConsole struct {
-	*bufio.Reader
-	*bufio.Writer
+	writer *os.File
+	reader *os.File
 }
 
 func (s serverConsole) Close() error {
 	os.Exit(1)
 	return nil
+}
+
+func (s serverConsole) Write(b []byte) (n int, err error) {
+	return s.writer.Write(b)
+}
+
+func (s serverConsole) Read(b []byte) (n int, err error) {
+
+	return 0, nil
 }

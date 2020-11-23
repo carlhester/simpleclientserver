@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"log"
 	"net"
 	"os"
@@ -28,8 +27,8 @@ func (g game) Run() {
 
 	// the serverConsole uses standard in/out
 	serverConsole := serverConsole{
-		bufio.NewReader(os.Stdin),
-		bufio.NewWriter(os.Stdout),
+		writer: os.Stdin,
+		reader: os.Stdout,
 	}
 
 	// players keeps a list of active players

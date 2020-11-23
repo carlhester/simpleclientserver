@@ -25,7 +25,7 @@ func listenForMessages(p player) {
 		scanner := bufio.NewScanner(p.conn)
 		for scanner.Scan() {
 			prefix := fmt.Sprintf("[%d] %s: ", p.id, p.name)
-			log.Println(prefix + scanner.Text() + "\n")
+			//log.Println(prefix + scanner.Text() + "\n")
 			p.msgs <- prefix + scanner.Text() + "\n"
 		}
 	}

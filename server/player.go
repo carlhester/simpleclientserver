@@ -51,6 +51,5 @@ func getPlayerName(p *player) error {
 		return err
 	}
 	p.name = name[:len(name)-1]
-	log.Println(name)
 	return nil
 }
