@@ -12,10 +12,19 @@ type game struct {
 	playerList
 }
 
+type clientErr struct {
+	p   *player
+	err error
+}
+
 func (g game) Run() {
 	// initialize id incrementer
 	id := make(chan int)
 	go incrementer(id)
+
+	// initialize error channel to receive errors from goroutines
+	errChan := make(chan clientErr)
+	go errHandler(errChan)
 
 	// the serverConsole uses standard in/out
 	serverConsole := serverConsole{
@@ -50,7 +59,21 @@ func (g game) Run() {
 			log.Panic(err)
 		}
 		id := <-id
-		go setupNewPlayer(conn, &g, id, &g.playerList)
+		go setupNewPlayer(conn, &g, id, &g.playerList, errChan)
 	}
+}
 
+// errHandler receives errors from goroutines
+func errHandler(err <-chan clientErr) {
+	e := <-err
+	e.p.pList.remove(*e.p)
+	//e.p.conn.Close()
+}
+
+func incrementer(id chan<- int) {
+	i := 0
+	for {
+		id <- i
+		i++
+	}
 }

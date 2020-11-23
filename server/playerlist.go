@@ -13,8 +13,12 @@ func (p *playerList) remove(toRemove player) {
 	for _, p := range p.players {
 		if p.id == toRemove.id {
 			continue
-			newList = append(newList, p)
 		}
+		newList = append(newList, p)
 	}
 	p.players = newList
+}
+
+func (p playerList) Get() []player {
+	return p.players
 }
