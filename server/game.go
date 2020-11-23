@@ -67,7 +67,7 @@ func (g game) Run() {
 func errHandler(err <-chan clientErr) {
 	e := <-err
 	e.p.pList.remove(*e.p)
-	//e.p.conn.Close()
+	e.p.conn.Close()
 }
 
 func incrementer(id chan<- int) {
