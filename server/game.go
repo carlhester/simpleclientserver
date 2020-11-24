@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -37,10 +39,11 @@ func (g game) Run() {
 	console := player{
 		id:    consoleId,
 		conn:  serverConsole,
-		name:  "server",
+		name:  "CONSOLE",
 		pList: &g.playerList,
 	}
 	g.playerList.add(console)
+	go consoleInput(console)
 
 	// create players by listening for network connects
 	addr := &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123}
@@ -59,6 +62,19 @@ func (g game) Run() {
 		}
 		id := <-id
 		go setupNewPlayer(conn, &g, id, &g.playerList, errChan)
+	}
+}
+
+func consoleInput(p player) {
+	fmt.Fprintf(os.Stdout, "> ")
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		msg := p.name + ": " + scanner.Text()
+		if msg[len(msg)-1] != '\n' {
+			msg = msg + string('\n')
+		}
+		sendMsgTo(nil, msg, p.pList.players...)
+		fmt.Fprintf(os.Stdout, "> ")
 	}
 }
 
