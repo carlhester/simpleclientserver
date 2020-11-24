@@ -38,13 +38,13 @@ func setupNewPlayer(conn net.Conn, game *game, id int, playerList *playerList, e
 		return
 	}
 	game.playerList.add(*newPlayer)
-	sendMsgTo(fmt.Sprintf("You are player %d", id), *newPlayer)
+	sendMsgTo(nil, fmt.Sprintf("You are player %d", id), *newPlayer)
 	go listenForMessages(*newPlayer)
-	go echoMessages(*newPlayer, &game.playerList)
+	go echoMessages(errChan, *newPlayer, &game.playerList)
 }
 
 func getPlayerName(p *player) error {
-	sendMsgTo("Hello! What is your name? ", *p)
+	sendMsgTo(nil, "Hello! What is your name? ", *p)
 	reader := bufio.NewReader(p.conn)
 	name, err := reader.ReadString('\n')
 	if err != nil {

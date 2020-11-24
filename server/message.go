@@ -3,20 +3,23 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 )
 
-func sendMsgTo(msg string, players ...player) {
+func sendMsgTo(errChan chan<- clientErr, msg string, players ...player) {
 	if msg[len(msg)-1] != '\n' {
 		msg = msg + string('\n')
 	}
-	for _, v := range players {
-		writer := bufio.NewWriter(v.conn)
+	for _, p := range players {
+		writer := bufio.NewWriter(p.conn)
 		_, err := writer.WriteString(msg)
+		err = writer.Flush()
 		if err != nil {
-			log.Panic(err)
+			newErr := clientErr{
+				p:   &p,
+				err: err,
+			}
+			errChan <- newErr
 		}
-		writer.Flush()
 	}
 }
 
@@ -31,13 +34,13 @@ func listenForMessages(p player) {
 	}
 }
 
-func echoMessages(player player, players *playerList) {
+func echoMessages(errChan chan<- clientErr, player player, players *playerList) {
 	for {
 		txt, ok := <-player.msgs
 		if ok {
 			for _, p := range players.players {
 				if p != player {
-					sendMsgTo(txt, p)
+					sendMsgTo(errChan, txt, p)
 				}
 			}
 		}
