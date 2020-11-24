@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"log"
 	"net"
 	"os"
 )
@@ -33,48 +30,21 @@ func (g game) Run() {
 		reader: os.Stdout,
 	}
 
-	// players keeps a list of active players
 	// the initial player is the serverConsole
-	consoleId := <-id
-	console := player{
-		id:    consoleId,
-		conn:  serverConsole,
-		name:  "CONSOLE",
-		pList: &g.playerList,
-	}
-	g.playerList.add(console)
+	console := setupConsole(<-id, serverConsole, &g.playerList)
 	go consoleInput(console)
+	g.playerList.add(console)
+
+	newConns := make(chan *net.Conn)
 
 	// create players by listening for network connects
-	addr := &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123}
-	log.Printf("listening on %s", addr)
-	listener, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		log.Panic(err)
+	listener := listener{
+		addr: &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123},
 	}
-	defer listener.Close()
-
-	// accept network connections and assign players
+	go listener.Listen(newConns)
 	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Panic(err)
-		}
-		id := <-id
-		go setupNewPlayer(conn, &g, id, &g.playerList, errChan)
-	}
-}
-
-func consoleInput(p player) {
-	fmt.Fprintf(os.Stdout, "> ")
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		msg := p.name + ": " + scanner.Text()
-		if msg[len(msg)-1] != '\n' {
-			msg = msg + string('\n')
-		}
-		sendMsgTo(nil, msg, p.pList.players...)
-		fmt.Fprintf(os.Stdout, "> ")
+		conn := <-newConns
+		go setupNewPlayer(*conn, &g, <-id, &g.playerList, errChan)
 	}
 }
 
