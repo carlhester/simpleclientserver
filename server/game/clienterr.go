@@ -1,6 +1,6 @@
 package game
 
-type clientErr struct {
-	p   *player
+type ClientErr struct {
+	P   *player
 	err error
 }

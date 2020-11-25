@@ -8,7 +8,7 @@ import (
 
 func TestPlayerList_Add_First(t *testing.T) {
 	// arrange
-	p := playerList{}
+	p := PlayerList{}
 	newPlayer := player{
 		id: 123456,
 	}
@@ -24,7 +24,7 @@ func TestPlayerList_Add_First(t *testing.T) {
 
 func TestPlayerList_Add_additional(t *testing.T) {
 	// arrange
-	p := playerList{
+	p := PlayerList{
 		players: []player{
 			player{
 				id: 123456,
@@ -46,7 +46,7 @@ func TestPlayerList_Add_additional(t *testing.T) {
 
 func TestPlayerList_Remove_Last(t *testing.T) {
 	// arrange
-	p := playerList{
+	p := PlayerList{
 		players: []player{
 			player{
 				id: 123456,
@@ -63,7 +63,7 @@ func TestPlayerList_Remove_Last(t *testing.T) {
 
 func TestPlayerList_Remove_Others(t *testing.T) {
 	// arrange
-	p := playerList{}
+	p := PlayerList{}
 	p.Add(player{id: 55555})
 	p.Add(player{id: 12345})
 	p.Add(player{id: 11111})
@@ -72,7 +72,7 @@ func TestPlayerList_Remove_Others(t *testing.T) {
 	p.Remove(player{id: 12345})
 
 	// assert
-	expected := playerList{
+	expected := PlayerList{
 		players: []player{
 			player{id: 55555},
 			player{id: 11111},
@@ -84,7 +84,7 @@ func TestPlayerList_Remove_Others(t *testing.T) {
 
 func TestPlayerList_Remove_NotFound(t *testing.T) {
 	// arrange
-	p := playerList{}
+	p := PlayerList{}
 	p.Add(player{id: 55555})
 	p.Add(player{id: 11111})
 
@@ -92,7 +92,7 @@ func TestPlayerList_Remove_NotFound(t *testing.T) {
 	p.Remove(player{id: 12345})
 
 	// assert
-	expected := playerList{
+	expected := PlayerList{
 		players: []player{
 			player{id: 55555},
 			player{id: 11111},
