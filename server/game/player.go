@@ -1,24 +1,22 @@
-package main
+package game
 
 import (
 	"bufio"
 	"fmt"
 	"log"
 	"net"
-
-	"github.com/crucialcarl/simpleclientserver/server/frontend"
 )
 
 // a player is a client with some labels
 type player struct {
 	id    int
-	conn  frontend.ClientFrontEnd
+	conn  ClientFrontEnd
 	name  string
 	msgs  chan string
 	pList *playerList
 }
 
-func setupNewPlayer(conn net.Conn, game *game, id int, playerList *playerList, errChan chan<- clientErr) {
+func setupNewPlayer(conn net.Conn, game *Game, id int, playerList *playerList, errChan chan<- clientErr) {
 	var newPlayer *player
 	var msgs = make(chan string)
 	log.Printf("Client connected: %s...\n", conn.RemoteAddr())
@@ -37,7 +35,7 @@ func setupNewPlayer(conn net.Conn, game *game, id int, playerList *playerList, e
 		errChan <- clErr
 		return
 	}
-	game.playerList.add(*newPlayer)
+	game.playerList.Add(*newPlayer)
 	sendMsgTo(nil, fmt.Sprintf("You are player %d", id), *newPlayer)
 	go listenForMessages(*newPlayer)
 	go echoMessages(errChan, *newPlayer, &game.playerList)

@@ -1,4 +1,4 @@
-package frontend
+package game
 
 // ClientFrontEnd is how the server interacts with the external clients
 type ClientFrontEnd interface {

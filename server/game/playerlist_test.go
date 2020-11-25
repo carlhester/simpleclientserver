@@ -1,4 +1,4 @@
-package main
+package game
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ func TestPlayerList_Add_First(t *testing.T) {
 	}
 
 	// act
-	p.add(newPlayer)
+	p.Add(newPlayer)
 	actual := p.players
 
 	// assert
@@ -36,7 +36,7 @@ func TestPlayerList_Add_additional(t *testing.T) {
 	}
 
 	// act
-	p.add(newPlayer)
+	p.Add(newPlayer)
 	actual := p.players
 
 	// assert
@@ -55,7 +55,7 @@ func TestPlayerList_Remove_Last(t *testing.T) {
 	}
 
 	// act
-	p.remove(player{id: 123456})
+	p.Remove(player{id: 123456})
 
 	// assert
 	assert.Equal(t, 0, len(p.players))
@@ -64,12 +64,12 @@ func TestPlayerList_Remove_Last(t *testing.T) {
 func TestPlayerList_Remove_Others(t *testing.T) {
 	// arrange
 	p := playerList{}
-	p.add(player{id: 55555})
-	p.add(player{id: 12345})
-	p.add(player{id: 11111})
+	p.Add(player{id: 55555})
+	p.Add(player{id: 12345})
+	p.Add(player{id: 11111})
 
 	// act
-	p.remove(player{id: 12345})
+	p.Remove(player{id: 12345})
 
 	// assert
 	expected := playerList{
@@ -85,11 +85,11 @@ func TestPlayerList_Remove_Others(t *testing.T) {
 func TestPlayerList_Remove_NotFound(t *testing.T) {
 	// arrange
 	p := playerList{}
-	p.add(player{id: 55555})
-	p.add(player{id: 11111})
+	p.Add(player{id: 55555})
+	p.Add(player{id: 11111})
 
 	// act
-	p.remove(player{id: 12345})
+	p.Remove(player{id: 12345})
 
 	// assert
 	expected := playerList{

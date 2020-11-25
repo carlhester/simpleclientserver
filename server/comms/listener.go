@@ -1,4 +1,4 @@
-package main
+package comms
 
 import (
 	"log"
@@ -16,7 +16,6 @@ func Listen(addr *net.TCPAddr, conns chan<- *net.Conn) {
 	// accept network connections and assign players
 	for {
 		conn, err := listener.Accept()
-		log.Println("Accepted")
 		if err != nil {
 			log.Panic(err)
 		}
