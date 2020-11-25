@@ -5,13 +5,9 @@ import (
 	"net"
 )
 
-type listener struct {
-	addr *net.TCPAddr
-}
-
-func (l listener) Listen(conns chan<- *net.Conn) {
-	log.Printf("listening on %s", l.addr)
-	listener, err := net.ListenTCP("tcp", l.addr)
+func Listen(addr *net.TCPAddr, conns chan<- *net.Conn) {
+	log.Printf("listening on %s", addr)
+	listener, err := net.ListenTCP("tcp", addr)
 	if err != nil {
 		log.Panic(err)
 	}

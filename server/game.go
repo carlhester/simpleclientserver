@@ -35,13 +35,10 @@ func (g game) Run() {
 	go consoleInput(console)
 	g.playerList.add(console)
 
+	// Accepted connections go into a channel to be set up
 	newConns := make(chan *net.Conn)
-
-	// create players by listening for network connects
-	listener := listener{
-		addr: &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123},
-	}
-	go listener.Listen(newConns)
+	addr := &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123}
+	go Listen(addr, newConns)
 	for {
 		conn := <-newConns
 		go setupNewPlayer(*conn, &g, <-id, &g.playerList, errChan)
