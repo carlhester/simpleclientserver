@@ -33,7 +33,6 @@ type Player struct {
 func SetupNewPlayer(conn net.Conn, id int, PlayerList *PlayerList, comm communicator) {
 	var p *Player
 	var msgs = make(chan string)
-	log.Printf("Client connected: %s...\n", conn.RemoteAddr())
 	p = &Player{
 		id:    id,
 		Conn:  conn,

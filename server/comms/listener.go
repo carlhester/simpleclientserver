@@ -19,6 +19,7 @@ func Listen(addr *net.TCPAddr, conns chan<- *net.Conn) {
 		if err != nil {
 			log.Panic(err)
 		}
+		log.Printf("Client connected: %s...\n", conn.RemoteAddr())
 		conns <- &conn
 	}
 
