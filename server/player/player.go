@@ -7,10 +7,10 @@ import (
 	"net"
 )
 
-type comm interface {
-	sendMsgTo(string, ...Player)
-	listenForMessages(Player)
-	echoMessages(Player, *PlayerList)
+type communicator interface {
+	SendMsgTo(string, ...Player)
+	ListenForMessages(Player)
+	EchoMessages(Player, *PlayerList)
 }
 
 // ClientFrontEnd is how the server interacts with the external clients
@@ -20,17 +20,17 @@ type ClientFrontEnd interface {
 	Close() error
 }
 
-// a Player is a client with some labels
+// Player ...
 type Player struct {
 	id    int
 	Conn  ClientFrontEnd
 	name  string
 	Msgs  chan string
 	PList *PlayerList
-	comm  comm
+	comm  communicator
 }
 
-func SetupNewPlayer(conn net.Conn, id int, PlayerList *PlayerList, comm comm) {
+func SetupNewPlayer(conn net.Conn, id int, PlayerList *PlayerList, comm communicator) {
 	var p *Player
 	var msgs = make(chan string)
 	log.Printf("Client connected: %s...\n", conn.RemoteAddr())
@@ -47,13 +47,13 @@ func SetupNewPlayer(conn net.Conn, id int, PlayerList *PlayerList, comm comm) {
 		return
 	}
 	PlayerList.Add(*p)
-	p.comm.sendMsgTo(fmt.Sprintf("You are Player %d", id), *p)
-	go p.comm.listenForMessages(*p)
-	go p.comm.echoMessages(*p, PlayerList)
+	p.comm.SendMsgTo(fmt.Sprintf("You are Player %d", id), *p)
+	go p.comm.ListenForMessages(*p)
+	go p.comm.EchoMessages(*p, PlayerList)
 }
 
 func getPlayerName(p *Player) error {
-	p.comm.sendMsgTo("Hello! What is your name? ", *p)
+	p.comm.SendMsgTo("Hello! What is your name? ", *p)
 	reader := bufio.NewReader(p.Conn)
 	name, err := reader.ReadString('\n')
 	if err != nil {
@@ -76,14 +76,3 @@ func (p Player) GetId() int {
 func (p Player) GetName() string {
 	return p.name
 }
-
-/*
-func (p Player) GetMsgs() []string {
-	var msgs []string
-	for m := range msgs {
-		msgs = append(msgs, m)
-	}
-	return msgs
-
-}
-*/

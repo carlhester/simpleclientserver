@@ -10,7 +10,7 @@ import (
 type Communicator struct {
 }
 
-func (c Communicator) sendMsgTo(msg string, players ...player.Player) {
+func (c Communicator) SendMsgTo(msg string, players ...player.Player) {
 	if msg[len(msg)-1] != '\n' {
 		msg = msg + string('\n')
 	}
@@ -27,7 +27,7 @@ func (c Communicator) sendMsgTo(msg string, players ...player.Player) {
 	}
 }
 
-func (c Communicator) listenForMessages(p player.Player) {
+func (c Communicator) ListenForMessages(p player.Player) {
 	for {
 		scanner := bufio.NewScanner(p.Conn)
 		for scanner.Scan() {
@@ -37,13 +37,13 @@ func (c Communicator) listenForMessages(p player.Player) {
 	}
 }
 
-func (c Communicator) echoMessages(player player.Player, playerList *player.PlayerList) {
+func (c Communicator) EchoMessages(player player.Player, playerList *player.PlayerList) {
 	for {
 		txt, ok := <-player.Msgs
 		if ok {
 			for _, p := range playerList.Get() {
 				if p != player {
-					c.sendMsgTo(txt, p)
+					c.SendMsgTo(txt, p)
 				}
 			}
 		}
