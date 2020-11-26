@@ -1,15 +1,15 @@
-package game
+package player
 
 type PlayerList struct {
-	players []player
+	players []Player
 }
 
-func (p *PlayerList) Add(newplayer player) {
+func (p *PlayerList) Add(newplayer Player) {
 	p.players = append(p.players, newplayer)
 }
 
-func (p *PlayerList) Remove(toRemove player) {
-	var newList []player
+func (p *PlayerList) Remove(toRemove Player) {
+	var newList []Player
 	for _, p := range p.players {
 		if p.id == toRemove.id {
 			continue
@@ -19,6 +19,6 @@ func (p *PlayerList) Remove(toRemove player) {
 	p.players = newList
 }
 
-func (p PlayerList) Get() []player {
+func (p PlayerList) Get() []Player {
 	return p.players
 }

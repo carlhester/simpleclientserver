@@ -1,4 +1,4 @@
-package game
+package player
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 func TestPlayerList_Add_First(t *testing.T) {
 	// arrange
 	p := PlayerList{}
-	newPlayer := player{
+	newPlayer := Player{
 		id: 123456,
 	}
 
@@ -18,20 +18,20 @@ func TestPlayerList_Add_First(t *testing.T) {
 	actual := p.players
 
 	// assert
-	expected := []player{player{id: 123456}}
+	expected := []Player{Player{id: 123456}}
 	assert.Equal(t, expected, actual)
 }
 
 func TestPlayerList_Add_additional(t *testing.T) {
 	// arrange
 	p := PlayerList{
-		players: []player{
-			player{
+		players: []Player{
+			Player{
 				id: 123456,
 			},
 		},
 	}
-	newPlayer := player{
+	newPlayer := Player{
 		id: 98765,
 	}
 
@@ -40,22 +40,22 @@ func TestPlayerList_Add_additional(t *testing.T) {
 	actual := p.players
 
 	// assert
-	expected := []player{player{id: 123456}, player{id: 98765}}
+	expected := []Player{Player{id: 123456}, Player{id: 98765}}
 	assert.Equal(t, expected, actual)
 }
 
 func TestPlayerList_Remove_Last(t *testing.T) {
 	// arrange
 	p := PlayerList{
-		players: []player{
-			player{
+		players: []Player{
+			Player{
 				id: 123456,
 			},
 		},
 	}
 
 	// act
-	p.Remove(player{id: 123456})
+	p.Remove(Player{id: 123456})
 
 	// assert
 	assert.Equal(t, 0, len(p.players))
@@ -64,18 +64,18 @@ func TestPlayerList_Remove_Last(t *testing.T) {
 func TestPlayerList_Remove_Others(t *testing.T) {
 	// arrange
 	p := PlayerList{}
-	p.Add(player{id: 55555})
-	p.Add(player{id: 12345})
-	p.Add(player{id: 11111})
+	p.Add(Player{id: 55555})
+	p.Add(Player{id: 12345})
+	p.Add(Player{id: 11111})
 
 	// act
-	p.Remove(player{id: 12345})
+	p.Remove(Player{id: 12345})
 
 	// assert
 	expected := PlayerList{
-		players: []player{
-			player{id: 55555},
-			player{id: 11111},
+		players: []Player{
+			Player{id: 55555},
+			Player{id: 11111},
 		},
 	}
 	assert.Equal(t, expected, p)
@@ -85,17 +85,17 @@ func TestPlayerList_Remove_Others(t *testing.T) {
 func TestPlayerList_Remove_NotFound(t *testing.T) {
 	// arrange
 	p := PlayerList{}
-	p.Add(player{id: 55555})
-	p.Add(player{id: 11111})
+	p.Add(Player{id: 55555})
+	p.Add(Player{id: 11111})
 
 	// act
-	p.Remove(player{id: 12345})
+	p.Remove(Player{id: 12345})
 
 	// assert
 	expected := PlayerList{
-		players: []player{
-			player{id: 55555},
-			player{id: 11111},
+		players: []Player{
+			Player{id: 55555},
+			Player{id: 11111},
 		},
 	}
 	assert.Equal(t, expected, p)
