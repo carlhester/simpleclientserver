@@ -12,6 +12,7 @@ type Server struct {
 }
 
 func (s Server) Run() {
+	s.PlayerList = &player.PlayerList{}
 	// init id incrementer
 	id := make(chan int)
 	go incrementer(id)
