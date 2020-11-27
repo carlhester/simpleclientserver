@@ -1,17 +1,13 @@
 package console
 
 import (
-	"bufio"
-	"fmt"
 	"os"
-
-	"github.com/crucialcarl/simpleclientserver/server/game"
 )
 
 // the ServerConsole is a special kind of client
 type ServerConsole struct {
-	writer *os.File
-	reader *os.File
+	Writer *os.File
+	Reader *os.File
 }
 
 func (s ServerConsole) Close() error {
@@ -20,7 +16,7 @@ func (s ServerConsole) Close() error {
 }
 
 func (s ServerConsole) Write(b []byte) (n int, err error) {
-	return s.writer.Write(b)
+	return s.Writer.Write(b)
 }
 
 func (s ServerConsole) Read(b []byte) (n int, err error) {
@@ -28,16 +24,7 @@ func (s ServerConsole) Read(b []byte) (n int, err error) {
 	return 0, nil
 }
 
-func setupConsole(id int, conn ServerConsole, pList *game.PlayerList) game.Player {
-	console := game.player{
-		id:    id,
-		conn:  conn,
-		name:  "CONSOLE",
-		pList: pList,
-	}
-	return console
-}
-
+/*
 func consoleInput(p game.player) {
 	fmt.Fprintf(os.Stdout, "> ")
 	scanner := bufio.NewScanner(os.Stdin)
@@ -50,3 +37,4 @@ func consoleInput(p game.player) {
 		fmt.Fprintf(os.Stdout, "> ")
 	}
 }
+*/

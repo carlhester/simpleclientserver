@@ -1,24 +1,24 @@
 package player
 
 type PlayerList struct {
-	players []Player
+	Players []Player
 }
 
 func (p *PlayerList) Add(newplayer Player) {
-	p.players = append(p.players, newplayer)
+	p.Players = append(p.Players, newplayer)
 }
 
 func (p *PlayerList) Remove(toRemove Player) {
 	var newList []Player
-	for _, p := range p.players {
-		if p.id == toRemove.id {
+	for _, p := range p.Players {
+		if p.Id == toRemove.Id {
 			continue
 		}
 		newList = append(newList, p)
 	}
-	p.players = newList
+	p.Players = newList
 }
 
 func (p PlayerList) Get() []Player {
-	return p.players
+	return p.Players
 }

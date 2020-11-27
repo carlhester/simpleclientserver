@@ -22,9 +22,9 @@ type ClientFrontEnd interface {
 
 // Player ...
 type Player struct {
-	id    int
+	Id    int
 	Conn  ClientFrontEnd
-	name  string
+	Name  string
 	Msgs  chan string
 	PList *PlayerList
 	comm  communicator
@@ -34,7 +34,7 @@ func SetupNewPlayer(conn net.Conn, id int, PlayerList *PlayerList, comm communic
 	var p *Player
 	var msgs = make(chan string)
 	p = &Player{
-		id:    id,
+		Id:    id,
 		Conn:  conn,
 		Msgs:  msgs,
 		PList: PlayerList,
@@ -58,7 +58,7 @@ func getPlayerName(p *Player) error {
 	if err != nil {
 		return err
 	}
-	p.name = name[:len(name)-1]
+	p.Name = name[:len(name)-1]
 	return nil
 }
 
@@ -69,9 +69,9 @@ func (p *Player) Close(msg string) {
 }
 
 func (p Player) GetId() int {
-	return p.id
+	return p.Id
 }
 
 func (p Player) GetName() string {
-	return p.name
+	return p.Name
 }

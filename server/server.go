@@ -2,8 +2,10 @@ package server
 
 import (
 	"net"
+	"os"
 
 	"github.com/crucialcarl/simpleclientserver/server/comms"
+	"github.com/crucialcarl/simpleclientserver/server/console"
 	"github.com/crucialcarl/simpleclientserver/server/player"
 )
 
@@ -12,10 +14,20 @@ type Server struct {
 }
 
 func (s Server) Run() {
-	s.PlayerList = &player.PlayerList{}
-	// init id incrementer
 	id := make(chan int)
 	go incrementer(id)
+	s.PlayerList = &player.PlayerList{
+		Players: []player.Player{player.Player{
+			Id: <-id,
+			Conn: console.ServerConsole{
+				Writer: os.Stdout,
+				Reader: os.Stdin,
+			},
+			Name:  "CONSOLE",
+			PList: s.PlayerList,
+		},
+		},
+	}
 
 	// Accepted connections go into a channel to be set up
 	newConns := make(chan *net.Conn)
