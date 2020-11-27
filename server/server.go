@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/crucialcarl/simpleclientserver/server/comms"
-	"github.com/crucialcarl/simpleclientserver/server/console"
 	"github.com/crucialcarl/simpleclientserver/server/player"
 )
 
@@ -19,7 +18,7 @@ func (s Server) Run() {
 	s.PlayerList = &player.PlayerList{
 		Players: []player.Player{player.Player{
 			Id: <-id,
-			Conn: console.ServerConsole{
+			Conn: player.ServerConsole{
 				Writer: os.Stdout,
 				Reader: os.Stdin,
 			},
