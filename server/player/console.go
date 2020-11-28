@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-// ServerConsole is a special kind of client that satisfies the ClientFrontEnd interface
+// ServerConsole is a special kind of client that satisfies the clientFrontEnd interface
 type ServerConsole struct {
 	Writer *os.File
 	Reader *os.File

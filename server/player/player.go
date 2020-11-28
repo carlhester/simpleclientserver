@@ -15,8 +15,8 @@ type communicator interface {
 	EchoMessages(Player, PlayerList)
 }
 
-// ClientFrontEnd is how the server interacts with the external clients
-type ClientFrontEnd interface {
+// clientFrontEnd is how the server interacts with the external clients
+type clientFrontEnd interface {
 	Write(b []byte) (n int, err error)
 	Read(b []byte) (n int, err error)
 	Close() error
@@ -25,7 +25,7 @@ type ClientFrontEnd interface {
 // Player ...
 type Player struct {
 	Id    int
-	Conn  ClientFrontEnd
+	Conn  clientFrontEnd
 	Name  string
 	Msgs  chan string
 	PList PlayerList
