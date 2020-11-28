@@ -7,21 +7,6 @@ import (
 	"net"
 )
 
-type PlayerList map[int]*Player
-
-type communicator interface {
-	SendMsgTo(string, ...Player)
-	ListenForMessages(Player)
-	EchoMessages(Player, PlayerList)
-}
-
-// clientFrontEnd is how the server interacts with the external clients
-type clientFrontEnd interface {
-	Write(b []byte) (n int, err error)
-	Read(b []byte) (n int, err error)
-	Close() error
-}
-
 // Player ...
 type Player struct {
 	Id    int
@@ -30,6 +15,20 @@ type Player struct {
 	Msgs  chan string
 	PList PlayerList
 	comm  communicator
+}
+
+func (p *Player) Close(msg string) {
+	log.Printf("%s\n", msg)
+	delete(p.PList, p.Id)
+	p.Conn.Close()
+}
+
+func (p Player) GetId() int {
+	return p.Id
+}
+
+func (p Player) GetName() string {
+	return p.Name
 }
 
 func SetupNewPlayer(conn net.Conn, id int, PlayerList PlayerList, comm communicator) {
@@ -62,18 +61,4 @@ func getPlayerName(p *Player) error {
 	}
 	p.Name = name[:len(name)-1]
 	return nil
-}
-
-func (p *Player) Close(msg string) {
-	log.Printf("%s\n", msg)
-	delete(p.PList, p.Id)
-	p.Conn.Close()
-}
-
-func (p Player) GetId() int {
-	return p.Id
-}
-
-func (p Player) GetName() string {
-	return p.Name
 }
