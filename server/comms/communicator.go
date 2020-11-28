@@ -37,13 +37,14 @@ func (c Communicator) ListenForMessages(p player.Player) {
 	}
 }
 
-func (c Communicator) EchoMessages(player player.Player, playerList *player.PlayerList) {
+func (c Communicator) EchoMessages(player player.Player, playerList player.PlayerList) {
 	for {
+		fmt.Printf("%+v\n", playerList)
 		txt, ok := <-player.Msgs
 		if ok {
-			for _, p := range playerList.Get() {
-				if p != player {
-					c.SendMsgTo(txt, p)
+			for _, p := range playerList {
+				if p.Id != player.Id {
+					c.SendMsgTo(txt, *p)
 				}
 			}
 		}

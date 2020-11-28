@@ -9,24 +9,25 @@ import (
 )
 
 type Server struct {
-	PlayerList *player.PlayerList
+	PlayerList player.PlayerList
 }
 
 func (s Server) Run() {
 	id := make(chan int)
 	go incrementer(id)
-	s.PlayerList = &player.PlayerList{
-		Players: []player.Player{player.Player{
-			Id: <-id,
-			Conn: player.ServerConsole{
-				Writer: os.Stdout,
-				Reader: os.Stdin,
-			},
-			Name:  "CONSOLE",
-			PList: s.PlayerList,
+
+	s.PlayerList = make(map[int]*player.Player)
+	console := &player.Player{
+		Id: <-id,
+		Conn: player.ServerConsole{
+			Writer: os.Stdout,
+			Reader: os.Stdin,
 		},
-		},
+		Name:  "CONSOLE",
+		PList: s.PlayerList,
 	}
+
+	s.PlayerList[console.Id] = console
 
 	// Accepted connections go into a channel to be set up
 	newConns := make(chan *net.Conn)
