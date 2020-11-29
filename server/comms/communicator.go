@@ -2,7 +2,6 @@ package comms
 
 import (
 	"bufio"
-	"fmt"
 
 	"github.com/crucialcarl/simpleclientserver/server/player"
 )
@@ -28,33 +27,22 @@ func (c Communicator) SendMsgTo(msg string, players ...player.Player) {
 }
 
 func (c Communicator) ListenForMessages(p player.Player) {
-	prefix := fmt.Sprintf("[%d] %s: ", p.GetId(), p.GetName())
+	//prefix := fmt.Sprintf("[%d] %s: ", p.Id, p.Name)
 	for {
 		scanner := bufio.NewScanner(p.Conn)
 		for scanner.Scan() {
 			txt := scanner.Text()
-			switch txt {
-			case "who":
-				p.Msgs <- fmt.Sprintf("PlayerList\n==============\n")
-				for i, player := range p.PList {
-					p.Msgs <- fmt.Sprintf("[%d] %s", i, player.Name)
-				}
-				p.Msgs <- fmt.Sprintf("==============\n")
-			default:
-				p.Msgs <- prefix + txt + string('\n')
-			}
+			p.MsgsOut <- txt
 		}
 	}
 }
 
 func (c Communicator) EchoMessages(player player.Player, playerList player.PlayerList) {
 	for {
-		txt, ok := <-player.Msgs
+		txt, ok := <-player.MsgsOut
 		if ok {
 			for _, p := range playerList {
-				//	if p.Id != player.Id {
 				c.SendMsgTo(txt, *p)
-				//	}
 			}
 		}
 	}

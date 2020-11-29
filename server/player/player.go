@@ -9,12 +9,14 @@ import (
 
 // Player ...
 type Player struct {
-	Id    int
-	Conn  clientFrontEnd
-	Name  string
-	Msgs  chan string
-	PList PlayerList
-	comm  communicator
+	Id       int
+	Conn     clientFrontEnd
+	Name     string
+	MsgsIn   chan string // Msgs destined for this Player
+	MsgsOut  chan string // Msgs from this player
+	PList    PlayerList
+	comm     communicator
+	location int
 }
 
 func (p *Player) Close(msg string) {
@@ -23,23 +25,15 @@ func (p *Player) Close(msg string) {
 	p.Conn.Close()
 }
 
-func (p Player) GetId() int {
-	return p.Id
-}
-
-func (p Player) GetName() string {
-	return p.Name
-}
-
 func SetupNewPlayer(conn net.Conn, id int, PlayerList PlayerList, comm communicator) {
 	var p *Player
 	var msgs = make(chan string)
 	p = &Player{
-		Id:    id,
-		Conn:  conn,
-		Msgs:  msgs,
-		PList: PlayerList,
-		comm:  comm,
+		Id:     id,
+		Conn:   conn,
+		MsgsIn: msgs,
+		PList:  PlayerList,
+		comm:   comm,
 	}
 	err := getPlayerName(p)
 	if err != nil {
@@ -49,7 +43,7 @@ func SetupNewPlayer(conn net.Conn, id int, PlayerList PlayerList, comm communica
 	PlayerList[p.Id] = p
 	p.comm.SendMsgTo(fmt.Sprintf("You are Player %d", id), *p)
 	go p.comm.ListenForMessages(*p)
-	go p.comm.EchoMessages(*p, PlayerList)
+	go p.receiveMsgs()
 }
 
 func getPlayerName(p *Player) error {
@@ -61,4 +55,23 @@ func getPlayerName(p *Player) error {
 	}
 	p.Name = name[:len(name)-1]
 	return nil
+}
+
+func (p *Player) receiveMsgs() {
+	for {
+		txt, ok := <-p.MsgsIn
+		if ok {
+			fmt.Println(txt)
+			writer := bufio.NewWriter(p.Conn)
+			_, err := writer.WriteString(txt)
+			if err != nil {
+				p.Close(err.Error())
+			}
+			err = writer.Flush()
+			if err != nil {
+				p.Close(err.Error())
+			}
+
+		}
+	}
 }
