@@ -35,19 +35,19 @@ func SetupNewPlayer(conn net.Conn, id int, PlayerList PlayerList, comm communica
 		PList:  PlayerList,
 		comm:   comm,
 	}
+	PlayerList[p.Id] = p
+	p.comm.SendMsgTo(fmt.Sprintf("You are Player %d", id), p)
+	go p.comm.ListenForMessages(*p)
+	go p.receiveMsgs()
 	err := getPlayerName(p)
 	if err != nil {
 		p.Close(err.Error())
 		return
 	}
-	PlayerList[p.Id] = p
-	p.comm.SendMsgTo(fmt.Sprintf("You are Player %d", id), *p)
-	go p.comm.ListenForMessages(*p)
-	go p.receiveMsgs()
 }
 
 func getPlayerName(p *Player) error {
-	p.comm.SendMsgTo("Hello! What is your name? ", *p)
+	p.comm.SendMsgTo("Hello! What is your name? ", p)
 	reader := bufio.NewReader(p.Conn)
 	name, err := reader.ReadString('\n')
 	if err != nil {

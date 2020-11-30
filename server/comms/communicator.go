@@ -9,11 +9,12 @@ import (
 type Communicator struct {
 }
 
-func (c Communicator) SendMsgTo(msg string, players ...player.Player) {
+func (c Communicator) SendMsgTo(msg string, players ...*player.Player) {
 	if msg[len(msg)-1] != '\n' {
 		msg = msg + string('\n')
 	}
 	for _, p := range players {
+		p.MsgsIn <- msg
 		writer := bufio.NewWriter(p.Conn)
 		_, err := writer.WriteString(msg)
 		if err != nil {
@@ -42,7 +43,7 @@ func (c Communicator) EchoMessages(player player.Player, playerList player.Playe
 		txt, ok := <-player.MsgsOut
 		if ok {
 			for _, p := range playerList {
-				c.SendMsgTo(txt, *p)
+				c.SendMsgTo(txt, p)
 			}
 		}
 	}

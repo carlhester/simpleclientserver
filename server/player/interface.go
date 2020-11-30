@@ -1,7 +1,7 @@
 package player
 
 type communicator interface {
-	SendMsgTo(string, ...Player)
+	SendMsgTo(string, ...*Player)
 	ListenForMessages(Player)
 	EchoMessages(Player, PlayerList)
 }
