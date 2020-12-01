@@ -1,9 +1,8 @@
-package player
+package user
 
 type communicator interface {
-	SendMsgTo(string, ...Player)
-	ListenForMessages(Player)
-	EchoMessages(Player, PlayerList)
+	SendMsgTo(string, ...*User)
+	ReceiveIncomingMessages(User)
 }
 
 // clientFrontEnd is how the server interacts with the external clients
