@@ -8,8 +8,8 @@ type commandList struct {
 	handlers map[string]handler
 }
 
-func (c *commandList) register(keyword string, cmd command) {
-	c.handler[keyword] = cmd
+func (c *commandList) register(keyword string, handler handler) {
+	c.handlers[keyword] = handler
 }
 
 type whocommand struct{}

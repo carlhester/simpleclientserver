@@ -5,38 +5,39 @@ import (
 	"os"
 
 	"github.com/crucialcarl/simpleclientserver/server/comms"
-	"github.com/crucialcarl/simpleclientserver/server/player"
+	"github.com/crucialcarl/simpleclientserver/server/user"
 )
 
 type Server struct {
-	PlayerList player.PlayerList
+	UserList user.UserList
 }
 
 func (s Server) Run() {
 	id := make(chan int)
 	go incrementer(id)
 
-	s.PlayerList = make(map[int]*player.Player)
-	console := &player.Player{
+	s.UserList = user.NewUserList()
+
+	console := &user.User{
 		Id: <-id,
-		Conn: player.ServerConsole{
+		Conn: user.ServerConsole{
 			Writer: os.Stdout,
 			Reader: os.Stdin,
 		},
 		Name:  "CONSOLE",
-		PList: s.PlayerList,
+		PList: s.UserList,
 	}
 
-	s.PlayerList[console.Id] = console
+	s.UserList[console.Id] = console
 
-	// Accepted connections go into a channel to be set up
 	newConns := make(chan *net.Conn)
 	addr := &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123}
+
 	go comms.Listen(addr, newConns)
 	for {
 		conn := <-newConns
 		comm := comms.Communicator{}
-		go player.SetupNewPlayer(*conn, <-id, s.PlayerList, comm)
+		go user.SetupNewUser(*conn, <-id, s.UserList, comm)
 	}
 }
 

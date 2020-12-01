@@ -13,7 +13,7 @@ func Listen(addr *net.TCPAddr, conns chan<- *net.Conn) {
 	}
 	defer listener.Close()
 
-	// accept network connections and assign players
+	// accept network connections and assign users
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
