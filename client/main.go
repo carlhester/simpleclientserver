@@ -40,6 +40,10 @@ func localClientInput(conn net.Conn) {
 			log.Println(err)
 		}
 		writer.Flush()
+		if err != nil {
+			log.Println(err)
+			conn.Close()
+		}
 	}
 }
 
@@ -51,6 +55,11 @@ func receiveRemoteServerMsgs(conn net.Conn) {
 			fmt.Print("\r")
 			fmt.Print(scanner.Text() + "\n")
 			fmt.Print("> ")
+		}
+		if scanner.Err() != nil {
+			log.Printf("error: %s\n", scanner.Err())
+			conn.Close()
+			os.Exit(1)
 		}
 	}
 }
