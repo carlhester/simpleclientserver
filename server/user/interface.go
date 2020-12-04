@@ -2,7 +2,7 @@ package user
 
 type communicator interface {
 	SendMsgTo(string, ...*User)
-	ReceiveIncomingMessages(User)
+	WriteToOutbox(User)
 }
 
 // clientFrontEnd is how the server interacts with the external clients

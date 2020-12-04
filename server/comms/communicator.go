@@ -24,7 +24,7 @@ func (c Communicator) SendMsgTo(msg string, users ...*user.User) {
 	}
 }
 
-func (c Communicator) ReceiveIncomingMessages(p user.User) {
+func (c Communicator) WriteToOutbox(p user.User) {
 	for {
 		scanner := bufio.NewScanner(p.Conn)
 		for scanner.Scan() {

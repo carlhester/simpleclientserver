@@ -9,14 +9,14 @@ import (
 
 // User ...
 type User struct {
-	Id         int
-	Conn       clientFrontEnd
-	Name       string
-	Inbox  chan string // Msgs destined for this User
-	Outbox chan string // Msgs from this user
-	PList      UserList
-	comm       communicator
-	location   int
+	Id       int
+	Conn     clientFrontEnd
+	Name     string
+	Inbox    chan string // Msgs destined for this User
+	Outbox   chan string // Msgs from this user
+	PList    UserList
+	comm     communicator
+	location int
 }
 
 func (p *User) Close(msg string) {
@@ -29,19 +29,23 @@ func SetupNewUser(conn net.Conn, id int, UserList UserList, comm communicator) {
 	var p *User
 	var msgs = make(chan string)
 	p = &User{
-		Id:        id,
-		Conn:      conn,
+		Id:    id,
+		Conn:  conn,
 		Inbox: msgs,
-		PList:     UserList,
-		comm:      comm,
+		PList: UserList,
+		comm:  comm,
 	}
 	UserList[p.Id] = p
-	go p.comm.ReceiveIncomingMessages(*p)
-	go p.receiveMsgs()
+	go p.writeToOutbox()
+	go p.readFromInbox()
 	p.comm.SendMsgTo(fmt.Sprintf("You are connection ID: %d", id), p)
 }
 
-func (p *User) receiveMsgs() {
+func (p *User) writeToOutbox() {
+	p.comm.WriteToOutbox(*p)
+}
+
+func (p *User) readFromInbox() {
 	for {
 		txt, ok := <-p.Inbox
 		if ok {
