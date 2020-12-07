@@ -10,13 +10,13 @@ import (
 type simpleServer struct {
 	listener
 	userlist *userlist
-	msgsChan  chan message // channel of messages inbound from clients
+	msgsChan chan message // channel of messages inbound from clients
 }
 
 func (s simpleServer) handleMsgs() {
 	for {
 		msg := <-s.msgsChan
-		fmt.Printf("From %s: %+s (%+v)\n", msg.src.name, msg.txt, msg)
+		fmt.Printf("From %s: %+s (%q) (%+v)\n", msg.src.name, msg.txt, msg.txt, msg)
 		if strings.HasPrefix(msg.txt, "/") {
 			s.handleCommand(msg)
 		}
@@ -26,7 +26,7 @@ func (s simpleServer) handleMsgs() {
 func (s simpleServer) handleCommand(msg message) {
 	switch msg.txt {
 	case "/who":
-		result := fmt.Sprintf("%+v\n", s.userlist)
+		result := fmt.Sprintf("%+v\n", s.userlist.users)
 		log.Print(result)
 		_, err := fmt.Fprintf(msg.src, result)
 		if err != nil {
@@ -36,22 +36,18 @@ func (s simpleServer) handleCommand(msg message) {
 }
 
 func newSimpleServer(c config) *simpleServer {
-	userlist := &userlist{}
-	newConns := make(chan *net.Conn)
-	msgsChan := make(chan message)
-
 	addr := &net.TCPAddr{
 		IP:   net.ParseIP(c.ip),
 		Port: c.port,
 	}
 
 	return &simpleServer{
-		userlist: userlist,
+		userlist: &userlist{},
 		listener: listener{
 			addr:     addr,
-			newConns: newConns,
+			newConns: make(chan *net.Conn),
 		},
-		msgsChan: msgsChan,
+		msgsChan: make(chan message),
 	}
 }
 
@@ -89,5 +85,17 @@ func (s *simpleServer) listen() {
 func (s *simpleServer) addToUserList(u *user) {
 	s.userlist.lock.Lock()
 	s.userlist.users = append(s.userlist.users, u)
+	s.userlist.lock.Unlock()
+}
+
+func (s *simpleServer) removeFromUserList(u *user) {
+	results := []*user{}
+	for _, each := range s.userlist.users {
+		if each != u {
+			results = append(results, each)
+		}
+	}
+	s.userlist.lock.Lock()
+	s.userlist.users = results
 	s.userlist.lock.Unlock()
 }
