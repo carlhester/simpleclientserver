@@ -1,50 +1,93 @@
-package server
+package main
 
 import (
+	"fmt"
+	"log"
 	"net"
-	"os"
-
-	"github.com/crucialcarl/simpleclientserver/server/comms"
-	"github.com/crucialcarl/simpleclientserver/server/user"
+	"strings"
 )
 
-type Server struct {
-	UserList user.UserList
+type simpleServer struct {
+	listener
+	userlist *userlist
+	msgsChan  chan message // channel of messages inbound from clients
 }
 
-func (s Server) Run() {
-	id := make(chan int)
-	go incrementer(id)
-
-	s.UserList = user.NewUserList()
-
-	console := &user.User{
-		Id: <-id,
-		Conn: user.ServerConsole{
-			Writer: os.Stdout,
-			Reader: os.Stdin,
-		},
-		Name:  "CONSOLE",
-		PList: s.UserList,
+func (s simpleServer) handleMsgs() {
+	for {
+		msg := <-s.msgsChan
+		fmt.Printf("From %s: %+s (%+v)\n", msg.src.name, msg.txt, msg)
+		if strings.HasPrefix(msg.txt, "/") {
+			s.handleCommand(msg)
+		}
 	}
+}
 
-	s.UserList[console.Id] = console
+func (s simpleServer) handleCommand(msg message) {
+	switch msg.txt {
+	case "/who":
+		result := fmt.Sprintf("%+v\n", s.userlist)
+		log.Print(result)
+		_, err := fmt.Fprintf(msg.src, result)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
 
+func newSimpleServer(c config) *simpleServer {
+	userlist := &userlist{}
 	newConns := make(chan *net.Conn)
-	addr := &net.TCPAddr{IP: net.ParseIP("0.0.0.0"), Port: 8123}
+	msgsChan := make(chan message)
 
-	go comms.Listen(addr, newConns)
-	for {
-		conn := <-newConns
-		comm := comms.Communicator{}
-		go user.SetupNewUser(*conn, <-id, s.UserList, comm)
+	addr := &net.TCPAddr{
+		IP:   net.ParseIP(c.ip),
+		Port: c.port,
+	}
+
+	return &simpleServer{
+		userlist: userlist,
+		listener: listener{
+			addr:     addr,
+			newConns: newConns,
+		},
+		msgsChan: msgsChan,
 	}
 }
 
-func incrementer(id chan<- int) {
-	i := 0
+func (s *simpleServer) run() error {
+	id := int(0)
+	go s.listen()
+	go s.handleMsgs()
 	for {
-		id <- i
-		i++
+		conn := <-s.newConns
+		u := newUser(id, conn, s.msgsChan)
+		s.addToUserList(u)
+		go u.process()
+		id++
 	}
+	return nil
+}
+
+func (s *simpleServer) listen() {
+	log.Printf("listening on %s", s.addr)
+	listener, err := net.ListenTCP("tcp", s.addr)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer listener.Close()
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Panic(err)
+		}
+		log.Printf("Client connected: %s...\n", conn.RemoteAddr())
+		s.newConns <- &conn
+	}
+}
+
+func (s *simpleServer) addToUserList(u *user) {
+	s.userlist.lock.Lock()
+	s.userlist.users = append(s.userlist.users, u)
+	s.userlist.lock.Unlock()
 }
