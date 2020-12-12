@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 )
 
 type user struct {
 	net.Conn
-	id      int
-	name    string
-	msgsChan chan message
+	id        int
+	name      string
+	msgsChan  chan message
+	loginTime time.Time
 }
 
 type userlist struct {
@@ -21,10 +23,11 @@ type userlist struct {
 
 func newUser(id int, conn *net.Conn, msgsChan chan message) *user {
 	return &user{
-		Conn:    *conn,
-		id:      id,
-		name:    fmt.Sprintf("User-%d", id),
-		msgsChan: msgsChan,
+		Conn:      *conn,
+		id:        id,
+		name:      fmt.Sprintf("User-%d", id),
+		msgsChan:  msgsChan,
+		loginTime: time.Now(),
 	}
 }
 

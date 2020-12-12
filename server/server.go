@@ -16,9 +16,15 @@ type simpleServer struct {
 func (s simpleServer) handleMsgs() {
 	for {
 		msg := <-s.msgsChan
+		msg.txt = strings.TrimSpace(msg.txt)
 		fmt.Printf("From %s: %+s (%q) (%+v)\n", msg.src.name, msg.txt, msg.txt, msg)
 		if strings.HasPrefix(msg.txt, "/") {
 			s.handleCommand(msg)
+		}
+
+		_, err := fmt.Fprintf(msg.src, "> ")
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
@@ -26,13 +32,17 @@ func (s simpleServer) handleMsgs() {
 func (s simpleServer) handleCommand(msg message) {
 	switch msg.txt {
 	case "/who":
-		result := fmt.Sprintf("%+v\n", s.userlist.users)
-		log.Print(result)
-		_, err := fmt.Fprintf(msg.src, result)
-		if err != nil {
-			log.Fatal(err)
+		result := fmt.Sprintf("NAME\tID\tTIME\n")
+		for _, u := range s.userlist.users {
+			result = result + fmt.Sprintf("%s\t%d\t%s\n", u.name, u.id, u.loginTime.Format("Mon Jan 2 15:04:05 MST 2006"))
+			log.Print(result)
+			_, err := fmt.Fprintf(msg.src, result)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
+
 }
 
 func newSimpleServer(c config) *simpleServer {
