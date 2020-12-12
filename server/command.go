@@ -14,12 +14,12 @@ type whoCommand struct {
 	userlist userlist
 }
 
-func (w whoCommand) execute() {
+func (cmd whoCommand) execute() {
 	result := fmt.Sprintf("NAME\tID\tTIME\n")
-	for _, u := range w.userlist.users {
+	for _, u := range cmd.userlist.users {
 		result = result + fmt.Sprintf("%s\t%d\t%s\n", u.name, u.id, u.loginTime.Format("Mon Jan 2 15:04:05 MST 2006"))
 		log.Print(result)
-		_, err := fmt.Fprintf(w.msg.src, result)
+		_, err := fmt.Fprintf(cmd.msg.src, result)
 		if err != nil {
 			log.Fatal(err)
 		}
