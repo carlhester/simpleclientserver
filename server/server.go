@@ -33,12 +33,13 @@ func (s simpleServer) handleMsgs() {
 func (s simpleServer) handleCommand(msg message) {
 	_, ok := s.commands[strings.Trim(msg.txt, "/")]
 	if ok {
-		cmd := whoCommand{
-			msg:      msg,
-			userlist: *s.userlist,
+		c := command{
+			directive: strings.Trim(msg.txt, "/"),
+			msg:       msg,
+			state:     &s,
 		}
-		cmd.execute()
-
+		c.execute()
+		fmt.Printf("%+v\n", c)
 	}
 }
 
@@ -48,6 +49,9 @@ func newSimpleServer(c config) *simpleServer {
 		Port: c.port,
 	}
 
+	commands := make(map[string]command)
+	commands["who"] = command{}
+
 	return &simpleServer{
 		userlist: &userlist{},
 		listener: listener{
@@ -55,17 +59,11 @@ func newSimpleServer(c config) *simpleServer {
 			newConns: make(chan *net.Conn),
 		},
 		msgsChan: make(chan message),
+		commands: commands,
 	}
 }
 
-func (s *simpleServer) registerCommand(cmd command, word string) {
-	s.commands[word] = cmd
-}
-
 func (s *simpleServer) run() error {
-	s.commands = make(map[string]command)
-	s.registerCommand(whoCommand{}, "who")
-
 	id := int(0)
 	go s.listen()
 	go s.handleMsgs()

@@ -5,23 +5,23 @@ import (
 	"log"
 )
 
-type command interface {
-	execute()
+type command struct {
+	directive string
+	msg       message
+	state     *simpleServer
 }
 
-type whoCommand struct {
-	msg      message
-	userlist userlist
-}
-
-func (cmd whoCommand) execute() {
-	result := fmt.Sprintf("NAME\tID\tTIME\n")
-	for _, u := range cmd.userlist.users {
-		result = result + fmt.Sprintf("%s\t%d\t%s\n", u.name, u.id, u.loginTime.Format("Mon Jan 2 15:04:05 MST 2006"))
-		log.Print(result)
-		_, err := fmt.Fprintf(cmd.msg.src, result)
-		if err != nil {
-			log.Fatal(err)
+func (cmd command) execute() {
+	switch cmd.directive {
+	case "who":
+		result := fmt.Sprintf("NAME\tID\tTIME\n")
+		for _, u := range cmd.state.userlist.users {
+			result = result + fmt.Sprintf("%s\t%d\t%s\n", u.name, u.id, u.loginTime.Format("Mon Jan 2 15:04:05 MST 2006"))
+			log.Print(result)
+			_, err := fmt.Fprintf(cmd.msg.src, result)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
