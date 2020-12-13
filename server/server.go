@@ -11,7 +11,7 @@ type simpleServer struct {
 	listener
 	userlist *userlist
 	msgsChan chan message // channel of messages inbound from clients
-	commands map[string]command
+	commands map[string]commandHandler
 }
 
 func (s simpleServer) handleMsgs() {
@@ -31,16 +31,16 @@ func (s simpleServer) handleMsgs() {
 }
 
 func (s simpleServer) handleCommand(msg message) {
-	_, ok := s.commands[strings.Trim(msg.txt, "/")]
+	handler, ok := s.commands[strings.Trim(msg.txt, "/")]
 	if ok {
-		c := command{
-			directive: strings.Trim(msg.txt, "/"),
-			msg:       msg,
-			state:     &s,
-		}
-		c.execute()
-		fmt.Printf("%+v\n", c)
+		handler(msg, &s)
+		return
 	}
+	_, err := fmt.Fprintf(msg.src, "Huh, what?\n")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func newSimpleServer(c config) *simpleServer {
@@ -49,17 +49,17 @@ func newSimpleServer(c config) *simpleServer {
 		Port: c.port,
 	}
 
-	commands := make(map[string]command)
-	commands["who"] = command{}
+	commands := make(map[string]commandHandler)
+	commands["who"] = whoCmdHandler
 
 	return &simpleServer{
 		userlist: &userlist{},
+		commands: commands,
+		msgsChan: make(chan message),
 		listener: listener{
 			addr:     addr,
 			newConns: make(chan *net.Conn),
 		},
-		msgsChan: make(chan message),
-		commands: commands,
 	}
 }
 
