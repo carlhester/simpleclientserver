@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 )
 
 type commandHandler func(message, *simpleServer)
@@ -16,5 +17,12 @@ func whoCmdHandler(msg message, s *simpleServer) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
+func uptimeCmdHandler(msg message, s *simpleServer) {
+	output := fmt.Sprintf("%s\n", time.Since(s.startTime).Truncate(time.Second).String())
+	_, err := fmt.Fprintf(msg.src, output)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

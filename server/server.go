@@ -5,13 +5,15 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 )
 
 type simpleServer struct {
 	listener
-	userlist *userlist
-	msgsChan chan message // channel of messages inbound from clients
-	commands map[string]commandHandler
+	userlist  *userlist
+	msgsChan  chan message // channel of messages inbound from clients
+	commands  map[string]commandHandler
+	startTime time.Time
 }
 
 func (s simpleServer) handleMsgs() {
@@ -22,7 +24,6 @@ func (s simpleServer) handleMsgs() {
 		if strings.HasPrefix(msg.txt, "/") {
 			s.handleCommand(msg)
 		}
-
 		_, err := fmt.Fprintf(msg.src, "> ")
 		if err != nil {
 			log.Fatal(err)
@@ -51,6 +52,7 @@ func newSimpleServer(c config) *simpleServer {
 
 	commands := make(map[string]commandHandler)
 	commands["who"] = whoCmdHandler
+	commands["uptime"] = uptimeCmdHandler
 
 	return &simpleServer{
 		userlist: &userlist{},
@@ -64,6 +66,7 @@ func newSimpleServer(c config) *simpleServer {
 }
 
 func (s *simpleServer) run() error {
+	s.startTime = time.Now()
 	id := int(0)
 	go s.listen()
 	go s.handleMsgs()
