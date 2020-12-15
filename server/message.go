@@ -1,6 +1,6 @@
 package main
 
 type message struct {
-	src user
+	src *user
 	txt string
 }

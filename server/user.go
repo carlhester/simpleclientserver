@@ -40,7 +40,7 @@ func (u user) process() {
 		for scanner.Scan() {
 			txt := scanner.Text()
 			msg := message{
-				src: u,
+				src: &u,
 				txt: txt,
 			}
 			u.msgsChan <- msg

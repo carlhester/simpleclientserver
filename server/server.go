@@ -76,6 +76,7 @@ func newSimpleServer(c config) *simpleServer {
 	commands["rooms"] = roomsCmdHandler
 	commands["here"] = hereCmdHandler
 	commands["say"] = sayCmdHandler
+	commands["name"] = nameCmdHandler
 
 	return &simpleServer{
 		userlist: &userlist{},
@@ -130,7 +131,7 @@ func (s *simpleServer) addToUserList(u *user) {
 func (s *simpleServer) removeFromUserList(u *user) {
 	results := []*user{}
 	for _, each := range s.userlist.users {
-		if each != u {
+		if each.id != u.id {
 			results = append(results, each)
 		}
 	}

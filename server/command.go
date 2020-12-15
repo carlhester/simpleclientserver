@@ -68,3 +68,17 @@ func uptimeCmdHandler(msg message, s *simpleServer) {
 		log.Fatal(err)
 	}
 }
+
+func nameCmdHandler(msg message, s *simpleServer) {
+	newName := strings.Split(msg.txt, " ")[1]
+	fmt.Printf("removing user from UserList: %+v\n", s.userlist)
+	s.removeFromUserList(msg.src)
+	fmt.Printf("removed user from UserList: %+v\n", s.userlist)
+	msg.src.name = newName
+	s.addToUserList(msg.src)
+	output := fmt.Sprintf("You are now known as %s", newName)
+	_, err := fmt.Fprintf(msg.src, output)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
