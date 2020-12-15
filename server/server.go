@@ -18,7 +18,7 @@ type simpleServer struct {
 }
 
 func (s simpleServer) roomExists(id int) bool {
-	for i := range s.roomlist {
+	for _, i := range s.roomlist {
 		if i == id {
 			return true
 		}
