@@ -14,6 +14,26 @@ type simpleServer struct {
 	msgsChan  chan message // channel of messages inbound from clients
 	commands  map[string]commandHandler
 	startTime time.Time
+	roomlist  []int
+}
+
+func (s simpleServer) roomExists(id int) bool {
+	for i := range s.roomlist {
+		if i == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (s simpleServer) usersInRoom(id int) []*user {
+	result := []*user{}
+	for _, u := range s.userlist.users {
+		if u.room == id {
+			result = append(result, u)
+		}
+	}
+	return result
 }
 
 func (s simpleServer) handleMsgs() {
@@ -41,7 +61,6 @@ func (s simpleServer) handleCommand(msg message) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func newSimpleServer(c config) *simpleServer {
@@ -53,6 +72,8 @@ func newSimpleServer(c config) *simpleServer {
 	commands := make(map[string]commandHandler)
 	commands["who"] = whoCmdHandler
 	commands["uptime"] = uptimeCmdHandler
+	commands["rooms"] = roomsCmdHandler
+	commands["here"] = hereCmdHandler
 
 	return &simpleServer{
 		userlist: &userlist{},
@@ -62,6 +83,7 @@ func newSimpleServer(c config) *simpleServer {
 			addr:     addr,
 			newConns: make(chan *net.Conn),
 		},
+		roomlist: []int{0},
 	}
 }
 

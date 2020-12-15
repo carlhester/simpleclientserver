@@ -14,6 +14,7 @@ type user struct {
 	name      string
 	msgsChan  chan message
 	loginTime time.Time
+	room      int
 }
 
 type userlist struct {
@@ -28,6 +29,7 @@ func newUser(id int, conn *net.Conn, msgsChan chan message) *user {
 		name:      fmt.Sprintf("User-%d", id),
 		msgsChan:  msgsChan,
 		loginTime: time.Now(),
+		room:      0,
 	}
 }
 
