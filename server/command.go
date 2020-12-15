@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -16,6 +17,18 @@ func whoCmdHandler(msg message, s *simpleServer) {
 	_, err := fmt.Fprintf(msg.src, output)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func sayCmdHandler(msg message, s *simpleServer) {
+	splitMsg := strings.Split(msg.txt, " ")
+	output := fmt.Sprintf("%s: %s\n", msg.src.name, strings.Join(splitMsg[1:], " "))
+	usersHere := s.usersInRoom(msg.src.room)
+	for _, u := range usersHere {
+		_, err := fmt.Fprintf(u, output)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 

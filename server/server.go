@@ -52,7 +52,8 @@ func (s simpleServer) handleMsgs() {
 }
 
 func (s simpleServer) handleCommand(msg message) {
-	handler, ok := s.commands[strings.Trim(msg.txt, "/")]
+	cmd := strings.Split(msg.txt, " ")
+	handler, ok := s.commands[strings.Trim(cmd[0], "/")]
 	if ok {
 		handler(msg, &s)
 		return
@@ -74,6 +75,7 @@ func newSimpleServer(c config) *simpleServer {
 	commands["uptime"] = uptimeCmdHandler
 	commands["rooms"] = roomsCmdHandler
 	commands["here"] = hereCmdHandler
+	commands["say"] = sayCmdHandler
 
 	return &simpleServer{
 		userlist: &userlist{},
