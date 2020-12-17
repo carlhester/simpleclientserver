@@ -1,0 +1,4 @@
+go.mod
+go.sum
+.pre-commit-config.yaml
+vendor/
